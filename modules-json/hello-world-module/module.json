@@ -237,8 +237,8 @@
             "priority": 10,
             "component": {
               "props": {
-                "groupLabel": "Summary Text",
-                "fieldLabel": "Summary"
+                "groupLabel": "Description Text",
+                "fieldLabel": "Description"
               }
             }
           }

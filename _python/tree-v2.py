@@ -117,7 +117,9 @@ def write_output(file_path: Path, lines):
 # MAIN
 # ============================================================================
 def main():
-    root = Path(os.getcwd())
+    root = Path(os.getcwd())  # Répertoire courant
+    root = root.parent        # Dossier parent
+    
     output_file = root / "tree.txt"
 
     print(f"📁 Analyse du dossier : {root}")

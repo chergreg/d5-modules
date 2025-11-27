@@ -3,7 +3,7 @@
 Plugin Name: D5 Demo Modules: Modules
 Plugin URI:
 Description: Example modules.
-Version:     0.0.2
+Version:     0.1.0
 Author:      Elegant Themes
 Author URI:  https://elegantthemes.com
 License:     GPL2

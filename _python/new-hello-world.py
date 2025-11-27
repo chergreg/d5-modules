@@ -40,8 +40,9 @@ import traceback
 # =========================================================
 
 COPY_OPERATIONS = [
-    ("src/components/static-module", "src/components/hello-world-module"),    
-    ("modules/StaticModule", "modules/HelloWorldModule")
+    ("../src/components/static-module", "../src/components/hello-world-module"),    
+    ("../modules/StaticModule", "../modules/HelloWorldModule"),
+    ("../src/icons/module-dynamic", "../src/icons/module-hello-world")
 ]
 
 RENAMES = [
@@ -55,8 +56,7 @@ CONTENT_REPLACEMENTS = {
     "StaticModule": "HelloWorldModule",
     "Static Module": "Hello World Module",
     "staticModule": "helloWorldModule",
-    "example/module-static" : "example/module-hello-world",
-    
+    "example/module-static" : "example/module-hello-world",    
 }
 
 TEXT_EXTENSIONS = {".ts", ".tsx", ".json", ".md", ".scss" ".css", ".php"}
