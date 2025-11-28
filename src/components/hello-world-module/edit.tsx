@@ -63,23 +63,14 @@ export const HelloWorldModuleEdit = (props: HelloWorldModuleEditProps): ReactEle
       {elements.styleComponents({
         attrName: 'module',
       })}
-      <div className="example_hello_world_module__inner">
-        <div className="example_hello_world_module__image">
-          <img src={imageSrc} alt={imageAlt} />
-        </div>
-        <div className="example_hello_world_module__content-container">
-          {elements.render({
-            attrName: 'title',
-          })}
-          {elements.render({
-            attrName: 'summary',
-          })}
-          <div className="example_hello_world_module__content">
-            {elements.render({
-              attrName: 'content',
-            })}
-          </div>
-        </div>
+      <div className="example_hello_world_module__inner">        
+        <img src={imageSrc} alt={imageAlt} />        
+        {elements.render({
+          attrName: 'title',
+        })}
+        {elements.render({
+          attrName: 'description',
+        })}
       </div>
     </ModuleContainer>
   );

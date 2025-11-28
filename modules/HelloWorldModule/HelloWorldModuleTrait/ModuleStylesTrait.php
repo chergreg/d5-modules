@@ -92,10 +92,10 @@ trait ModuleStylesTrait {
 						]
 					),
 
-					// Content.
+					// Description.
 					$elements->style(
 						[
-							'attrName' => 'content',
+							'attrName' => 'description',
 						]
 					),
 

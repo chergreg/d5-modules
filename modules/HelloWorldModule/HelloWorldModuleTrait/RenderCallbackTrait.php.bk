@@ -39,33 +39,61 @@ trait RenderCallbackTrait {
 		// error_log( '[HelloWorldModule] render_callback called' );
 		// error_log( '[HelloWorldModule] attrs: ' . print_r( $attrs, true ) );
 		
-		// 1. RECUP DES DONNÉES
-		$title = $elements->render(['attrName' => 'title',]);
-		$description = $elements->render(['attrName' => 'description',]);
-
-		// Pour le text  brut :
-		// $titleText       = $attrs['title']['innerContent']['desktop']['value'] ?? '';
-		// $descriptionText = $attrs['description']['innerContent']['desktop']['value'] ?? '';
-		
+		// 1. IMAGE
 		$image_src = $attrs['image']['innerContent']['desktop']['value']['src'] ?? '';
 		$image_alt = $attrs['image']['innerContent']['desktop']['value']['alt'] ?? '';
 
-		// 2. TAG IMAGE		
 		$image = '';
+
 		if ( ! empty( $image_src ) ) {
-			$image = '<img src="' . $image_src . '" alt="' . $image_alt . '">';
-		}				
+			$image = HTMLUtility::render(
+				[
+					'tag'        => 'img',
+					'attributes' => [
+						'src' => $image_src,
+						'alt' => $image_alt,
+					],
+					'attributesSanitizers' => [
+						'src' => function ( $value ) {
+							$protocols = array_merge( wp_allowed_protocols(), [ 'data' ] ); // Need to add `data` protocol for default image.
+							return esc_url( $value, $protocols );
+						},
+					],
+				]
+			);
+		}
+
+		// 2. CHAMPS TEXTE (TITLE / DESCRIPTION)
+		$title = $elements->render(
+			[
+				'attrName' => 'title',
+			]
+		);
+
+		$description = $elements->render(
+			[
+				'attrName' => 'description',
+			]
+		);
+
+		// Si  tu veux juste le texte brut :
+		// $titleText       = $attrs['title']['innerContent']['desktop']['value'] ?? '';
+		// $descriptionText = $attrs['description']['innerContent']['desktop']['value'] ?? '';
 
 		// 3. MARKUP HTML DU MODULE
-		$html  = '<div class="example_hello_world_module__inner">';
-		$html .=    '<div class="example_hello_world_module__image">';
-		$html .=        $image;
-		$html .=    '</div>';
-		$html .=    '<div class="example_hello_world_module__content-container">';
-		$html .=        $title;
-		$html .=        $description;
-		$html .=    '</div>';
-		$html .= '</div>'; 
+		// On construit simplement le HTML en HEREDOC.
+		// Les variables PHP sont interpolées directement (image, title, description).
+		$inner_markup = <<<HTML
+<div class="example_hello_world_module__inner">
+	<div class="example_hello_world_module__image">
+		{$image}
+	</div>
+	<div class="example_hello_world_module__content-container">
+		{$title}
+		{$description}
+	</div>
+</div>
+HTML;
 
 		// 4. CONTEXTE PARENT
 		$parent       = BlockParserStore::get_parent( $block->parsed_block['id'], $block->parsed_block['storeInstance'] );
@@ -101,7 +129,7 @@ trait RenderCallbackTrait {
 							'storeInstance' => $block->parsed_block['storeInstance'],
 						]
 					),
-					$html,
+					$inner_markup,
 				],
 			]
 		);
