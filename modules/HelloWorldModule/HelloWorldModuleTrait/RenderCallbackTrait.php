@@ -43,7 +43,7 @@ trait RenderCallbackTrait {
 		$title = $elements->render(['attrName' => 'title',]);
 		$description = $elements->render(['attrName' => 'description',]);
 
-		// Pour le text  brut :
+		// Pour le text brut :
 		// $titleText       = $attrs['title']['innerContent']['desktop']['value'] ?? '';
 		// $descriptionText = $attrs['description']['innerContent']['desktop']['value'] ?? '';
 		
