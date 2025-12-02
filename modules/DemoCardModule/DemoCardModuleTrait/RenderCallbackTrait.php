@@ -56,6 +56,11 @@ trait RenderCallbackTrait {
 			$image = '<img src="' . $image_src . '" alt="' . $image_alt . '">';
 		}				
 
+		// Variables Globales
+		$d5_global    = get_option( 'd5_global' );
+		$api_key_demo = get_option( 'api_key_demo' );
+
+
 		// 3. MARKUP HTML DU MODULE
 		$html  = '<div class="example_demo_card_module__inner">';
 		$html .=    '<div class="example_demo_card_module__image">';
@@ -65,7 +70,11 @@ trait RenderCallbackTrait {
 		$html .=        $title;
 		$html .=        $description;
 		$html .=    '</div>';
+		$html .=    '<div>'; 
+		$html .=    'D5 Global : ' . $d5_global; 
+		$html .=    '</div>';
 		$html .= '</div>'; 
+
 
 		// 4. CONTEXTE PARENT
 		$parent       = BlockParserStore::get_parent( $block->parsed_block['id'], $block->parsed_block['storeInstance'] );
