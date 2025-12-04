@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Card YouTube Flip</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    /* =========================================
+       DEMO / LAYOUT GÉNÉRAL (hors composant)
+       https://chatgpt.com/g/g-p-6928a7e3ba94819198f068f243d51f4a-gbo-module-divi/c/693099db-b51c-8330-8161-eff36af877cf
+       http://127.0.0.1:5500/_html/CardYT/CardYT-v2.html
+       ========================================= */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .card-container {
+      max-width: 800px;
+      width: 100%;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .card-container h1 {
+      font-size: 1.4rem;
+      margin: 0 0 16px;
+      font-weight: 600;
+      color: #f9fafb;
+    }
+
+    /* =========================================
+       CSS DU COMPOSANT .card-yt
+       ========================================= */
+
+    .card-yt {
+      position: relative;
+      width: 100%;
+      cursor: pointer;
+      /* pour la 3D */
+      perspective: 1200px;
+    }
+
+    /* ratio 16/9 pour la vignette */
+    .card-yt-inner {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      transform-style: preserve-3d;
+      transition: transform 0.6s ease;
+    }
+
+    .card-yt-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .card-yt-front,
+    .card-yt-back {
+      display: flex;
+      align-items: stretch;
+      justify-content: stretch;
+    }
+
+    /* Flip au hover */
+    .card-yt:hover .card-yt-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-yt-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Quand la vidéo joue : on fige le flip et on masque la carte */
+    .card-yt.card-yt-playing .card-yt-inner {
+      transform: none;
+      visibility: hidden;
+    }
+    .card-yt.card-yt-playing:hover .card-yt-inner {
+      transform: none;
+    }
+
+    /* ---------- Face avant : style YouTube ---------- */
+
+    .card-yt-thumb {
+      position: relative;
+      flex: 1;
+      background: #020617;
+      overflow: hidden;
+    }
+
+    .card-yt-thumb img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.02);
+    }
+
+    .card-yt-thumb::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.75),
+        rgba(0, 0, 0, 0.25),
+        rgba(0, 0, 0, 0)
+      );
+    }
+
+    .card-yt-title-block {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 40px;
+      z-index: 2;
+      color: #f9fafb;
+    }
+
+    .card-yt-title-block h2 {
+      margin: 0 0 6px;
+      font-size: clamp(1.1rem, 2vw, 1.4rem);
+      line-height: 1.25;
+      font-weight: 700;
+      text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9);
+    }
+
+    .card-yt-title-block p {
+      margin: 0;
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    .card-yt-duration {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      z-index: 2;
+      padding: 3px 6px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #e5e7eb;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .card-yt-playbtn {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+      z-index: 2;
+    }
+
+    .card-yt-playbtn::before {
+      content: "";
+      border-style: solid;
+      border-width: 10px 0 10px 18px;
+      border-color: transparent transparent transparent #e5e7eb;
+      margin-left: 3px;
+    }
+
+    .card-yt:hover .card-yt-playbtn {
+      transform: translate(-50%, -50%) scale(1.06);
+    }
+
+    /* ---------- Face arrière : blur + description ---------- */
+
+    .card-yt-back-inner {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .card-yt-back-inner::before {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      background-image: url("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg");
+      background-size: cover;
+      background-position: center;
+      filter: blur(10px) brightness(0.35);
+      transform: scale(1.05);
+    }
+
+    .card-yt-back-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.45), transparent 55%);
+      mix-blend-mode: screen;
+    }
+
+    .card-yt-back-content {
+      position: relative;
+      z-index: 1;
+      padding: 18px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+      color: #f9fafb;
+    }
+
+    .card-yt-back-content h3 {
+      margin: 0 0 10px;
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+    }
+
+    .card-yt-back-content p {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* ---------- Wrapper vidéo ---------- */
+
+    .card-yt-video-wrapper {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      overflow: hidden;
+      display: none;
+      background: #000;
+    }
+
+    .card-yt.card-yt-playing .card-yt-video-wrapper {
+      display: block;
+    }
+
+    .card-yt-video-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* ---------- Responsive / petits écrans ---------- */
+
+    @media (max-width: 600px) {
+      .card-container {
+        padding: 16px;
+      }
+
+      .card-yt-playbtn {
+        width: 58px;
+        height: 58px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card-container">
+    <h1>Demo &mdash; Card YouTube Flip</h1>
+
+    <!-- Card YouTube -->
+    <div class="card-yt" data-video-id="dQw4w9WgXcQ">
+      <div class="card-yt-inner">
+        <!-- PILE -->
+        <div class="card-yt-face card-yt-front">
+          <div class="card-yt-thumb">
+            <!-- Image miniature -->
+            <img
+              src="https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+              alt="Miniature de la vidéo"
+            />
+
+            <div class="card-yt-playbtn"></div>
+
+            <div class="card-yt-title-block">
+              <h2>Les 10 meilleurs projets des abonnés !</h2>
+              <p>Benjamin Code • 3,3&nbsp;k vues • il y a 3&nbsp;heures</p>
+            </div>
+
+            <div class="card-yt-duration">22:15</div>
+          </div>
+        </div>
+
+        <!-- FACE -->
+        <div class="card-yt-face card-yt-back">
+          <div class="card-yt-back-inner">
+            <div class="card-yt-back-gradient"></div>
+
+            <div class="card-yt-back-content">
+              <h3>Description de la vidéo</h3>
+              <p>
+                Je réagis aux 125 projets que vous m’avez envoyés&nbsp;:
+                applis web, jeux vidéo, outils dev, et plein d’idées
+                originales. On analyse ensemble ce qui fonctionne, ce
+                qui peut être amélioré, et comment aller plus loin.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zone vidéo (affichée au clic) -->
+      <div class="card-yt-video-wrapper"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS minimal : sur clic de la vignette, on remplace la card par une iframe YouTube avec autoplay
+    document.addEventListener("DOMContentLoaded", function () {
+      var cards = document.querySelectorAll(".card-yt");
+
+      cards.forEach(function (card) {
+        var front = card.querySelector(".card-yt-front");
+        var wrapper = card.querySelector(".card-yt-video-wrapper");
+        var videoId = card.getAttribute("data-video-id");
+
+        if (!front || !wrapper || !videoId) return;
+
+        front.addEventListener("click", function () {
+          if (card.classList.contains("card-yt-playing")) return;
+
+          var iframe = document.createElement("iframe");
+          iframe.src = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
+          iframe.setAttribute("allowfullscreen", "true");
+          iframe.setAttribute(
+            "allow",
+            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          );
+          wrapper.appendChild(iframe);
+
+          card.classList.add("card-yt-playing");
+        });
+      });
+    });
+  </script>
+</body>
+</html>

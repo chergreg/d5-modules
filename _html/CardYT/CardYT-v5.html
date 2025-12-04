@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Card YouTube Flip</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    /* =========================================
+       DEMO / LAYOUT GÉNÉRAL (hors composant)
+       ========================================= */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .card-container {
+      max-width: 800px;
+      width: 100%;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .card-container h1 {
+      font-size: 1.4rem;
+      margin: 0 0 16px;
+      font-weight: 600;
+      color: #f9fafb;
+    }
+
+    /* =========================================
+       CSS DU COMPOSANT .card-yt
+       ========================================= */
+
+    .card-yt {
+      width: 100%;
+    }
+
+    /* --- Zone média (vignette/vidéo) --- */
+    .card-yt .card-yt-media {
+      position: relative;
+      width: 100%;
+      cursor: pointer;
+      perspective: 1200px;
+    }
+
+    .card-yt .card-yt-inner {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* ratio 16:9 */
+      transform-style: preserve-3d;
+      transition: transform 0.6s ease;
+    }
+
+    .card-yt .card-yt-media:hover .card-yt-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-yt .card-yt-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .card-yt .card-yt-front,
+    .card-yt .card-yt-back {
+      display: flex;
+      align-items: stretch;
+      justify-content: stretch;
+    }
+
+    .card-yt .card-yt-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Quand la vidéo joue : on cache la carte et on montre l’iframe */
+    .card-yt.card-yt-playing .card-yt-inner {
+      transform: none;
+      visibility: hidden;
+    }
+
+    .card-yt.card-yt-playing .card-yt-video-wrapper {
+      display: block;
+    }
+
+    /* --- Face avant : vignette + bouton + durée --- */
+
+    .card-yt .card-yt-thumb {
+      position: relative;
+      flex: 1;
+      background: #020617;
+      overflow: hidden;
+    }
+
+    .card-yt .card-yt-thumb img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.02);
+    }
+
+    .card-yt .card-yt-thumb::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.55),
+        rgba(0, 0, 0, 0.2),
+        rgba(0, 0, 0, 0)
+      );
+    }
+
+    .card-yt .card-yt-duration {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      z-index: 2;
+      padding: 3px 6px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #e5e7eb;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .card-yt .card-yt-playbtn {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+      z-index: 2;
+    }
+
+    .card-yt .card-yt-playbtn::before {
+      content: "";
+      border-style: solid;
+      border-width: 10px 0 10px 18px;
+      border-color: transparent transparent transparent #e5e7eb;
+      margin-left: 3px;
+    }
+
+    .card-yt .card-yt-media:hover .card-yt-playbtn {
+      transform: translate(-50%, -50%) scale(1.06);
+    }
+
+    /* --- Face arrière : blur + description + petit play --- */
+
+    .card-yt .card-yt-back-inner {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .card-yt .card-yt-back-inner::before {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      background-image: url("https://i.ytimg.com/vi/HW2p_MxvmQI/maxresdefault.jpg");
+      background-size: cover;
+      background-position: center;
+      filter: blur(10px) brightness(0.35);
+      transform: scale(1.05);
+    }
+
+    .card-yt .card-yt-back-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.45), transparent 55%);
+      mix-blend-mode: screen;
+    }
+
+    /* Icône Play en haut à droite (face arrière) */
+    .card-yt .card-yt-back-play {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(220, 38, 38, 0.65); /* Rouge semi-transparent */
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+    }
+
+    .card-yt .card-yt-back-play::before {
+      content: "";
+      border-style: solid;
+      border-width: 7px 0 7px 12px;
+      border-color: transparent transparent transparent #fff;
+      margin-left: 2px;
+    }
+
+    .card-yt .card-yt-back-content {
+      position: relative;
+      z-index: 1;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      height: 100%;
+      color: #f9fafb;
+
+      /* Scroll élégant pour descriptions très longues */
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.8) transparent;
+    }
+
+    /* Scrollbar WebKit (Chrome, Edge, Safari) */
+    .card-yt .card-yt-back-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .card-yt .card-yt-back-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .card-yt .card-yt-back-content::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.8);
+      border-radius: 999px;
+    }
+
+    .card-yt .card-yt-back-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(248, 250, 252, 0.9);
+    }
+
+    .card-yt .card-yt-back-content h3 {
+      margin: 0 0 10px;
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+    }
+
+    .card-yt .card-yt-back-content p {
+      margin: 0 0 10px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .card-yt .card-yt-back-content a {
+      color: #bfdbfe;
+      text-decoration: underline;
+    }
+
+    .card-yt .card-yt-back-content a:hover {
+      color: #e5f0ff;
+    }
+
+    /* --- Wrapper vidéo (dans la zone média) --- */
+
+    .card-yt .card-yt-video-wrapper {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      overflow: hidden;
+      display: none;
+      background: #000;
+    }
+
+    .card-yt .card-yt-video-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* --- Zone infos sous la vignette --- */
+
+    .card-yt .card-yt-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+      color: #e5e7eb;
+    }
+
+    .card-yt .card-yt-avatar-link {
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .card-yt .card-yt-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, #38bdf8, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #f9fafb;
+      font-size: 1.1rem;
+    }
+
+    .card-yt .card-yt-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-yt .card-yt-title-link {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .card-yt .card-yt-title-line {
+      margin: 0 0 4px;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .card-yt .card-yt-title-line:hover {
+      text-decoration: underline;
+    }
+
+    .card-yt .card-yt-channel-row {
+      font-size: 0.9rem;
+      margin-bottom: 2px;
+    }
+
+    .card-yt .card-yt-channel-link {
+      color: #9ca3af;
+      text-decoration: none;
+    }
+
+    .card-yt .card-yt-channel-link:hover {
+      color: #e5e7eb;
+    }
+
+    .card-yt .card-yt-meta-line {
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    /* ---------- Responsive / petits écrans ---------- */
+
+    @media (max-width: 600px) {
+      .card-container {
+        padding: 16px;
+      }
+
+      .card-yt .card-yt-playbtn {
+        width: 58px;
+        height: 58px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card-container">
+    <h1>Demo &mdash; Card YouTube Flip (vignette uniquement)</h1>
+
+    <div
+      class="card-yt"
+      data-video-id="HW2p_MxvmQI"
+      data-video-url="https://www.youtube.com/watch?v=HW2p_MxvmQI"
+      data-channel-url="https://www.youtube.com/@benjamincode"
+    >
+      <!-- ZONE MÉDIA : flip + vidéo -->
+      <div class="card-yt-media">
+        <div class="card-yt-inner">
+          <!-- PILE : juste vignette, bouton et durée -->
+          <div class="card-yt-face card-yt-front">
+            <div class="card-yt-thumb">
+              <img
+                src="https://i.ytimg.com/vi/HW2p_MxvmQI/maxresdefault.jpg"
+                alt="Miniature de la vidéo"
+              />
+
+              <div class="card-yt-playbtn"></div>
+              <div class="card-yt-duration">22:15</div>
+            </div>
+          </div>
+
+          <!-- FACE : description sur blur -->
+          <div class="card-yt-face card-yt-back">
+            <div class="card-yt-back-inner">
+              <div class="card-yt-back-gradient"></div>
+
+              <!-- Petit play en haut à droite -->
+              <div class="card-yt-back-play"></div>
+
+              <div class="card-yt-back-content">
+                <h3>Description de la vidéo</h3>
+                <p>
+                  Une liste de 125 idées de projets pour monter en compétence
+                  en développement&nbsp;: front, back, mobile, outils perso…
+                  De quoi t’entraîner sans jamais être à court d’inspiration.
+                </p>
+                <p>
+                  Tu peux retrouver la liste complète des idées sur la page dédiée :
+                  <a href="https://benjamincode.com" target="_blank" rel="noopener noreferrer">
+                    voir les projets proposés
+                  </a>.
+                </p>
+                <p>
+                  N’hésite pas à piocher plusieurs idées, les combiner, et en faire
+                  des projets concrets à ajouter à ton portfolio. Plus tu pratiques,
+                  plus tu progresses.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vidéo insérée au clic -->
+        <div class="card-yt-video-wrapper"></div>
+      </div>
+
+      <!-- INFOS SOUS LA VIGNETTE -->
+      <div class="card-yt-meta">
+        <a
+          class="card-yt-avatar-link"
+          href="https://www.youtube.com/@benjamincode"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Aller sur la chaîne YouTube de Benjamin Code"
+        >
+          <div class="card-yt-avatar">B</div>
+        </a>
+
+        <div class="card-yt-text">
+          <a
+            class="card-yt-title-link"
+            href="https://www.youtube.com/watch?v=HW2p_MxvmQI"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <h3 class="card-yt-title-line">
+              125 projets de DEV pour progresser (et ne plus jamais manquer d'idées)
+            </h3>
+          </a>
+
+          <div class="card-yt-channel-row">
+            <a
+              class="card-yt-channel-link"
+              href="https://www.youtube.com/@benjamincode"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Benjamin Code (150k abonnés)
+            </a>
+          </div>
+
+          <div class="card-yt-meta-line">
+            3,3&nbsp;k&nbsp;vues • 1&nbsp;254&nbsp;likes • il y a 3&nbsp;heures
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sur clic de la vignette, on remplace la zone média par une iframe YT autoplay.
+    document.addEventListener("DOMContentLoaded", function () {
+      var cards = document.querySelectorAll(".card-yt");
+
+      cards.forEach(function (card) {
+        var media = card.querySelector(".card-yt-media");
+        var wrapper = card.querySelector(".card-yt-video-wrapper");
+        var videoId = card.getAttribute("data-video-id");
+
+        if (!media || !wrapper || !videoId) return;
+
+        media.addEventListener("click", function () {
+          if (card.classList.contains("card-yt-playing")) return;
+
+          var iframe = document.createElement("iframe");
+          iframe.src = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
+          iframe.setAttribute("allowfullscreen", "true");
+          iframe.setAttribute(
+            "allow",
+            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          );
+
+          wrapper.appendChild(iframe);
+          card.classList.add("card-yt-playing");
+        });
+      });
+    });
+  </script>
+</body>
+</html>
