@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use MEE\Modules\StaticModule\StaticModule;
 use MEE\Modules\HelloWorldModule\HelloWorldModule;
 use MEE\Modules\DemoCardModule\DemoCardModule;
+use MEE\Modules\DemoCardYTModule\DemoCardYTModule;
 use MEE\Modules\DemoEtudiantModule\DemoEtudiantModule;
 
 
@@ -24,6 +25,7 @@ add_action(
 		$dependency_tree->add_dependency( new StaticModule() );
 		$dependency_tree->add_dependency( new HelloWorldModule() );
 		$dependency_tree->add_dependency( new DemoCardModule() );
+		$dependency_tree->add_dependency( new DemoCardYTModule() );
 		$dependency_tree->add_dependency( new DemoEtudiantModule() );
 	}
 );

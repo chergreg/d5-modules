@@ -568,8 +568,8 @@ def main(argv: Optional[list] = None) -> None:
     """
 
     # 🔹 Constantes centralisées
-    DEFAULT_SOURCE = "HelloWorldModule"
-    DEFAULT_TARGET = "DemoSliderModule"
+    DEFAULT_SOURCE = "DemoCardModule"
+    DEFAULT_TARGET = "DemoCardYTModule"
     DEFAULT_MODE   = "duplicate"  # "rename" => transformation directe
 
     # 🚀 Setup logging

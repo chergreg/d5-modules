@@ -1,0 +1,58 @@
+{
+  "_comment": "Testing separated default render attributes for 3rd party modules",
+  "module": {
+    "meta": {
+      "adminLabel": {
+        "desktop": {
+          "value": "Demo Card Y T Module"
+        }
+      }
+    },
+    "advanced": {
+      "text": {
+        "text": {
+          "desktop": {
+            "value": {
+              "color": "light"
+            }
+          }
+        }
+      }
+    },
+    "decoration": {
+      "spacing": {
+        "desktop": {
+          "value": {
+            "padding": {
+              "top": "30px",
+              "right": "30px",
+              "bottom": "30px",
+              "left": "30px"
+            }
+          }
+        }
+      }
+    }
+  },
+  "title": {
+    "decoration": {
+      "font": {
+        "font": {
+          "desktop": {
+            "value": {
+              "headingLevel": "h2"
+            }
+          }
+        }
+      }
+    }
+  },
+  "description": {
+    "innerContent": {
+      "desktop": {
+        "value": "Default Render Att pour Description"
+      }
+    }
+  }
+}
+
